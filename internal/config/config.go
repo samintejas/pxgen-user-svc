@@ -19,7 +19,9 @@ func Init() {
 }
 
 type AppConfigs struct {
-	Port string
+	Port           string
+	PerfomanceMode bool
+	GodMode        bool
 }
 
 type MySQLConfigs struct {
@@ -36,7 +38,9 @@ type MySQLConfigs struct {
 func loadConfig() {
 
 	App = &AppConfigs{
-		Port: loadString("PXGEN_USR_APP_PORT", "8080"),
+		Port:           loadString("PXGEN_USR_APP_PORT", "8080"),
+		PerfomanceMode: loadBool("PXGEN_USR_APP_PERF_MODE", false),
+		GodMode:        loadBool("PXGEN_USR_APP_GOD_MODE", false),
 	}
 
 	MySQL = &MySQLConfigs{

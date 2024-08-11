@@ -48,8 +48,13 @@ func ConnectMySQL() *sql.DB {
 }
 
 func configLogging() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-
+	perfMode, ok := os.LookupEnv("PXGEN_USR_APP_PERF_MODE")
+	if !ok {
+		perfMode = "false"
+	}
+	if perfMode == "false" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: zerolog.TimeFieldFormat})
+	} else {
+		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	}
 }
