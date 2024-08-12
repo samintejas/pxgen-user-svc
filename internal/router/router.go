@@ -1,9 +1,11 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"pxgen.io/user/internal/handler"
+	"pxgen.io/user/internal/utils"
 )
 
 type Router struct {
@@ -23,7 +25,7 @@ func (router *Router) SetupRouter() *http.ServeMux {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-
+	utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid endpoint"))
 }
 
 func (router *Router) registerApiVersionOne() *http.ServeMux {
@@ -31,7 +33,7 @@ func (router *Router) registerApiVersionOne() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", rootHandler)
-	mux.Handle("/users/", http.StripPrefix("/users", router.userRouter()))
+	mux.Handle("/user/", http.StripPrefix("/user", router.userRouter()))
 	mux.Handle("/auth/", http.StripPrefix("/auth", authRouter()))
 
 	return mux

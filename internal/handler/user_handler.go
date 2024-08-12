@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -71,7 +70,6 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		userId, err := h.repo.CreateUser(&newuser)
 		if err != nil {
-			log.Print(err)
 			utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to create new user"))
 		} else {
 			utils.WriteJson(w, http.StatusCreated, response.RegistedUser{ID: userId})

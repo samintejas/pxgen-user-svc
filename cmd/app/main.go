@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/go-sql-driver/mysql"
@@ -11,6 +12,9 @@ import (
 	"github.com/rs/zerolog/pkgerrors"
 	"pxgen.io/user/internal/config"
 	"pxgen.io/user/internal/constants"
+	"pxgen.io/user/internal/handler"
+	"pxgen.io/user/internal/repo"
+	"pxgen.io/user/internal/router"
 )
 
 func main() {
@@ -20,9 +24,22 @@ func main() {
 	log.Info().Msg("Starting pxgen user management service ..")
 	config.Init()
 	log.Info().Msg("Configs loaded !")
-	ConnectMySQL()
+	db := ConnectMySQL()
+	defer closeDbOnExit(db)
 	log.Info().Msg("Database connected")
 
+	log.Info().Msg("initializing routers")
+	userHandler := handler.NewUserHandler(repo.NewUserRepository(db))
+	router := router.NewRouter(*userHandler)
+
+	log.Info().Str("Port", config.App.Port).Msg("starting server on port")
+	http.ListenAndServe(":"+config.App.Port, router.SetupRouter())
+
+}
+
+func closeDbOnExit(db *sql.DB) {
+	log.Info().Msg("closing database connections")
+	db.Close()
 }
 
 func ConnectMySQL() *sql.DB {
