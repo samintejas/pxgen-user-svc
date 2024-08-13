@@ -8,3 +8,5 @@ _____ __ __ _____ _____ _____
 
 pxgen user management service v0.1
 `
+
+const TRACE_ID_KEY = "trace-id"

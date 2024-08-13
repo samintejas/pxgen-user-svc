@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/rs/zerolog/log"
+	"pxgen.io/user/internal/utils/log"
 )
 
 var loaded sync.Once
@@ -58,10 +58,7 @@ func loadConfig() {
 func loadString(key, def string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		log.Info().
-			Str("env", key).
-			Str("default", def).
-			Msg("Config not set, using default value")
+		log.Infof("env variable not found , using default, KEY=%s, VALUE=%s", key, def)
 		return def
 	}
 	return value
@@ -70,18 +67,12 @@ func loadString(key, def string) string {
 func loadBool(key string, def bool) bool {
 	value := os.Getenv(key)
 	if value == "" {
-		log.Info().
-			Str("env", key).
-			Bool("default", def).
-			Msg("Config not set, using default value")
+		log.Infof("env variable not found , using default, KEY=%s, VALUE=%s", key, strconv.FormatBool(def))
 		return def
 	}
 	boolValue, err := strconv.ParseBool(value)
 	if err != nil {
-		log.Fatal().
-			Str("env", key).
-			Err(err).
-			Msg("Invalid boolean value")
+		log.Error("invalid boolean value for the configuration")
 	}
 	return boolValue
 }

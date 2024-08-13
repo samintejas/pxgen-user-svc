@@ -23,6 +23,7 @@ func NewUserHandler(repo repo.UserRepositoryInterface) *UserHandler {
 
 func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.repo.GetAllUsers()
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

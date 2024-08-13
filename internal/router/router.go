@@ -21,7 +21,7 @@ func (router *Router) SetupRouter() *http.ServeMux {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
-	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", middleware.LogCall(router.registerApiVersionOne())))
+	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", middleware.GenerateReqId(middleware.LogCall(router.registerApiVersionOne()))))
 	return mux
 }
 

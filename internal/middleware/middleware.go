@@ -6,22 +6,23 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
+	"pxgen.io/user/internal/constants"
+	"pxgen.io/user/internal/utils/log"
 )
 
 func LogCall(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		log.Info().Str("Method", r.Method).Str("Path", r.URL.Path).Msg("Got request")
+		log.Infocf(r.Context(), "Request received , PATH = %s , METHOD = %s", r.URL.Path, r.Method)
 		next.ServeHTTP(w, r)
-		log.Info().Str("Method", r.Method).Str("Path", r.URL.Path).Str("Time took", time.Since(start).String()).Msg("Request completed")
+		log.Infocf(r.Context(), "Request processed in %s ms", time.Since(start).String())
 	})
 }
 
 func GenerateReqId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		iti := uuid.New
-		ctx := context.WithValue(r.Context(), "internal-trase-id", iti)
+		iti := uuid.New().String()
+		ctx := context.WithValue(r.Context(), constants.TRACE_ID_KEY, iti)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

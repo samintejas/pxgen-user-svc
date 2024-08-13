@@ -4,38 +4,35 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/rs/zerolog/pkgerrors"
 	"pxgen.io/user/internal/config"
 	"pxgen.io/user/internal/constants"
 	"pxgen.io/user/internal/handler"
 	"pxgen.io/user/internal/repo"
 	"pxgen.io/user/internal/router"
+	"pxgen.io/user/internal/utils/log"
 )
 
 func main() {
 
-	fmt.Print(constants.BANNER + "\n")
+	fmt.Print(constants.BANNER)
 
-	configLogging()
-	log.Info().Msg("Starting pxgen user management service ..")
 	config.Init()
+
 	db := ConnectMySQL()
 	defer db.Close()
 
 	userHandler := handler.NewUserHandler(repo.NewUserRepository(db))
 	router := router.NewRouter(*userHandler)
-
-	log.Info().Str("Port", config.App.Port).Msg("starting server")
+	log.Infof("Starting application on port %s", config.App.Port)
 	http.ListenAndServe(":"+config.App.Port, router.SetupRouter())
 
 }
 
 func ConnectMySQL() *sql.DB {
+
+	log.Infof("Connecting to MYSQL at %s:%s as %s", config.MySQL.Url, config.MySQL.Port, config.MySQL.User)
 
 	cfg := mysql.Config{
 		User:                 config.MySQL.User,
@@ -51,20 +48,8 @@ func ConnectMySQL() *sql.DB {
 
 	err := db.Ping()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to open mysql connection")
+		log.Logger().Fatal("failed to establish connection with database")
 	}
 
 	return db
-}
-
-func configLogging() {
-	perfMode, ok := os.LookupEnv("PXGEN_USR_APP_PERF_MODE")
-	if !ok {
-		perfMode = "false"
-	}
-	if perfMode == "false" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: zerolog.TimeFieldFormat})
-	} else {
-		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-	}
 }
