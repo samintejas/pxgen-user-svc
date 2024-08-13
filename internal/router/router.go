@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"pxgen.io/user/internal/handler"
+	"pxgen.io/user/internal/middleware"
 	"pxgen.io/user/internal/utils"
 )
 
@@ -20,7 +21,7 @@ func (router *Router) SetupRouter() *http.ServeMux {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
-	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", router.registerApiVersionOne()))
+	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", middleware.LogCall(router.registerApiVersionOne())))
 	return mux
 }
 

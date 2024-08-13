@@ -20,26 +20,19 @@ import (
 func main() {
 
 	fmt.Print(constants.BANNER + "\n")
+
 	configLogging()
 	log.Info().Msg("Starting pxgen user management service ..")
 	config.Init()
-	log.Info().Msg("Configs loaded !")
 	db := ConnectMySQL()
-	defer closeDbOnExit(db)
-	log.Info().Msg("Database connected")
+	defer db.Close()
 
-	log.Info().Msg("initializing routers")
 	userHandler := handler.NewUserHandler(repo.NewUserRepository(db))
 	router := router.NewRouter(*userHandler)
 
-	log.Info().Str("Port", config.App.Port).Msg("starting server on port")
+	log.Info().Str("Port", config.App.Port).Msg("starting server")
 	http.ListenAndServe(":"+config.App.Port, router.SetupRouter())
 
-}
-
-func closeDbOnExit(db *sql.DB) {
-	log.Info().Msg("closing database connections")
-	db.Close()
 }
 
 func ConnectMySQL() *sql.DB {
