@@ -17,3 +17,8 @@ type UpdateUser struct {
 	Password  string `json:"password,omitempty" validate:"omitempty,min=8,max=64,containsany=!@#$%^&*"`
 	Status    string `json:"status,omitempty" validate:"omitempty,oneof=active inactive"`
 }
+
+type LoginRequest struct {
+	Username string `json:"userName"`
+	Password string `json:"password"`
+}

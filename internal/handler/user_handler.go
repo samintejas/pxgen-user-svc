@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"pxgen.io/user/internal/models"
 	"pxgen.io/user/internal/repo"
@@ -32,14 +31,15 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	stringid := r.PathValue("id")
-	id, err := strconv.ParseUint(stringid, 10, 64)
 
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
+	claims, ok := r.Context().Value("claims").(*utils.Claims)
+
+	if !ok {
+		http.Error(w, "Could not get user claims", http.StatusInternalServerError)
+		return
 	}
 
-	user, err := h.repo.GetUserById(uint(id))
+	user, err := h.repo.GetUserByUsername(claims.Username)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -60,13 +60,19 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 	}
 
+	hashedPass, err := utils.HashPassword(payload.Password)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("bad password"))
+	}
+
 	if !ex {
 		newuser := models.User{
 			UserName:  payload.UserName,
 			FirstName: payload.FirstName,
 			LastName:  payload.LastName,
 			Email:     payload.Email,
-			Password:  payload.Password,
+			Password:  hashedPass,
 			Status:    payload.Status,
 		}
 		userId, err := h.repo.CreateUser(&newuser)
@@ -87,12 +93,14 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, err)
 	}
 
-	stringid := r.PathValue("id")
-	id, err := strconv.ParseUint(stringid, 10, 64)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
+	claims, ok := r.Context().Value("claims").(*utils.Claims)
+
+	if !ok {
+		http.Error(w, "Could not get user claims", http.StatusInternalServerError)
+		return
 	}
-	u, err := h.repo.GetUserById(uint(id))
+
+	u, err := h.repo.GetUserByUsername(claims.Username)
 	if u == nil {
 		utils.WriteError(w, http.StatusNotFound, fmt.Errorf("user not found"))
 	} else if err != nil {
@@ -118,8 +126,14 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	if err := h.repo.DeleteUser(id); err != nil {
+	claims, ok := r.Context().Value("claims").(*utils.Claims)
+
+	if !ok {
+		http.Error(w, "Could not get user claims", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.repo.DeleteUser(claims.Username); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -11,10 +11,11 @@ import (
 
 type Router struct {
 	userHandler handler.UserHandler
+	authHandler handler.AuthHandler
 }
 
-func NewRouter(userHandler handler.UserHandler) *Router {
-	return &Router{userHandler: userHandler}
+func NewRouter(userHandler handler.UserHandler, authHandler handler.AuthHandler) *Router {
+	return &Router{userHandler: userHandler, authHandler: authHandler}
 }
 
 func (router *Router) SetupRouter() *http.ServeMux {
@@ -34,8 +35,8 @@ func (router *Router) registerApiVersionOne() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", rootHandler)
-	mux.Handle("/user/", http.StripPrefix("/user", router.userRouter()))
-	mux.Handle("/auth/", http.StripPrefix("/auth", authRouter()))
+	mux.Handle("/user/", http.StripPrefix("/user", middleware.Auth(router.userRouter())))
+	mux.Handle("/auth/", http.StripPrefix("/auth", router.authRouter()))
 
 	return mux
 
@@ -44,13 +45,14 @@ func (router *Router) registerApiVersionOne() *http.ServeMux {
 func (router *Router) userRouter() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /", router.userHandler.CreateUser)
-	mux.HandleFunc("PUT /{id}", router.userHandler.UpdateUser)
-	mux.HandleFunc("GET /{id}", router.userHandler.GetUser)
-	mux.HandleFunc("DELETE /{id}", router.userHandler.DeleteUser)
+	mux.HandleFunc("PUT /", router.userHandler.UpdateUser)
+	mux.HandleFunc("GET /", router.userHandler.GetUser)
+	mux.HandleFunc("DELETE /", router.userHandler.DeleteUser)
 	return mux
 }
 
-func authRouter() *http.ServeMux {
+func (router *Router) authRouter() *http.ServeMux {
 	mux := http.NewServeMux()
+	mux.HandleFunc("POST /login", router.authHandler.Login)
 	return mux
 }

@@ -10,11 +10,11 @@ import (
 
 type UserRepositoryInterface interface {
 	GetAllUsers() ([]models.User, error)
-	DeleteUser(id string) error
+	DeleteUser(username string) error
 	ExcistsByUsernameAndEmail(username string, email string) (bool, error)
 	GetUserByEmail(email string) (*models.User, error)
 	CreateUser(user *models.User) (uint, error)
-	GetUserById(id uint) (*models.User, error)
+	GetUserByUsername(username string) (*models.User, error)
 	UpdateUser(user *models.User) (*models.User, error)
 }
 
@@ -30,7 +30,7 @@ func (r *UserRepository) GetAllUsers() ([]models.User, error) {
 	return []models.User{}, nil
 }
 
-func (r *UserRepository) DeleteUser(id string) error {
+func (r *UserRepository) DeleteUser(username string) error {
 	return nil
 }
 
@@ -52,13 +52,13 @@ func (r *UserRepository) GetUserByEmailAndStatus(email string, status string) (*
 	return r.getUserByQuery(query, email)
 }
 
-func (r *UserRepository) GetUserById(id uint) (*models.User, error) {
+func (r *UserRepository) GetUserByUsername(username string) (*models.User, error) {
 	query := `
-        SELECT id, username, email, password, first_name, last_name, status, created_at, updated_at
+        SELECT id, username, email, first_name, last_name, status, created_at, updated_at
         FROM users
-        WHERE id = ?
+        WHERE username = ?
     `
-	return r.getUserByQuery(query, id)
+	return r.getUserByQuery(query, username)
 }
 
 func (r *UserRepository) GetUserByIdAndStatus(email string, status string) (*models.User, error) {
@@ -77,7 +77,6 @@ func (r *UserRepository) getUserByQuery(query string, args ...any) (*models.User
 		&user.ID,
 		&user.UserName,
 		&user.Email,
-		&user.Password,
 		&user.FirstName,
 		&user.LastName,
 		&user.Status,
@@ -156,7 +155,7 @@ func (r *UserRepository) UpdateUser(user *models.User) (*models.User, error) {
 		return nil, err
 	}
 
-	return r.GetUserById(user.ID)
+	return r.GetUserByUsername(user.UserName)
 }
 
 func (r *UserRepository) ExcistsByUsernameAndEmail(username string, email string) (bool, error) {
