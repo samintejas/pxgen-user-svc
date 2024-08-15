@@ -14,14 +14,13 @@ mysql is required to run this application, table ddls are attached in the git
 - custom logging
 - http routing and middleware
 - basic user apis
+- login & auth
 
 ### under development
 - validation
 - security
 - auditing
-- auth apis
 - admin apis
-- role apis
+- roles
 - root UI using HTMX
-- swagger
 - api UI's using HTMX

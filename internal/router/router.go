@@ -1,12 +1,12 @@
 package router
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
 
 	"pxgen.io/user/internal/handler"
 	"pxgen.io/user/internal/middleware"
-	"pxgen.io/user/internal/utils"
+	"pxgen.io/user/internal/utils/log"
 )
 
 type Router struct {
@@ -27,7 +27,13 @@ func (router *Router) SetupRouter() *http.ServeMux {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid endpoint"))
+	rtpl, err1 := template.ParseFiles("./resources/templates/root.html")
+	// etpl, err2 := template.ParseFiles("./templates/error.html")
+	if err1 != nil {
+		log.Info(err1.Error())
+		return
+	}
+	rtpl.Execute(w, nil)
 }
 
 func (router *Router) registerApiVersionOne() *http.ServeMux {
