@@ -21,19 +21,46 @@ func NewRouter(userHandler handler.UserHandler, authHandler handler.AuthHandler)
 func (router *Router) SetupRouter() *http.ServeMux {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", rootHandler)
+	mux.Handle("/p/", http.StripPrefix("/p", middleware.GenerateReqId(middleware.LogCall(router.registerPage()))))
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", middleware.GenerateReqId(middleware.LogCall(router.registerApiVersionOne()))))
 	return mux
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	rtpl, err1 := template.ParseFiles("./resources/templates/root.html")
-	// etpl, err2 := template.ParseFiles("./templates/error.html")
-	if err1 != nil {
-		log.Info(err1.Error())
+	rootTmpl, err := template.ParseFiles("./resources/templates/root.html")
+	if err != nil {
+		log.Info(err.Error())
 		return
 	}
-	rtpl.Execute(w, nil)
+	rootTmpl.Execute(w, nil)
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	homeTmpl, err := template.ParseFiles("./resources/templates/home.html")
+	if err != nil {
+		log.Info(err.Error())
+		return
+	}
+	homeTmpl.Execute(w, nil)
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	rootTmpl, err := template.ParseFiles("./resources/templates/login.html")
+	if err != nil {
+		log.Info(err.Error())
+		return
+	}
+	rootTmpl.Execute(w, nil)
+}
+
+func (router *Router) registerPage() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", rootHandler)
+	mux.HandleFunc("/home", homeHandler)
+	mux.HandleFunc("/login", loginHandler)
+
+	return mux
 }
 
 func (router *Router) registerApiVersionOne() *http.ServeMux {
