@@ -19,9 +19,7 @@ func NewRouter(userHandler handler.UserHandler, authHandler handler.AuthHandler)
 }
 
 func (router *Router) SetupRouter() *http.ServeMux {
-
 	mux := http.NewServeMux()
-	mux.Handle("/p/", http.StripPrefix("/p", middleware.GenerateReqId(middleware.LogCall(router.registerPage()))))
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", middleware.GenerateReqId(middleware.LogCall(router.registerApiVersionOne()))))
 	return mux
 }

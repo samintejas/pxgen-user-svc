@@ -26,6 +26,7 @@ func main() {
 	userHandler := handler.NewUserHandler(repo.NewUserRepository(db))
 	authHandler := handler.NewAuthHandler(repo.NewAuthRepo(db))
 	router := router.NewRouter(*userHandler, *authHandler)
+
 	log.Infof("Starting application on port %s", config.App.Port)
 	http.ListenAndServe(":"+config.App.Port, router.SetupRouter())
 
