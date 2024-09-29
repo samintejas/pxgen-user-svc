@@ -16,3 +16,5 @@ mysql is required to run this application
 - basic user apis
 - password encryption
 - jwt authentication
+
+
